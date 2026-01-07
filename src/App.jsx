@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Send, Lock, User, Shield, Eye, EyeOff, Copy, Check, Upload, FileText, ZoomIn, Download, Activity, Database, Zap, X, Clock, Binary, Key, RefreshCcw, ImageIcon } from 'lucide-react';
+import { 
+  Send, Lock, User, Shield, Eye, EyeOff, Copy, Check, 
+  Upload, FileText, ZoomIn, Download, Activity, Database, 
+  Zap, X, Clock, Binary, Key, RefreshCcw, ImageIcon 
+} from 'lucide-react';
 
 // ==================== I. CHAOTIC FSM ENGINE ====================
 /**
@@ -229,7 +233,11 @@ const App = () => {
     textArea.value = text;
     document.body.appendChild(textArea);
     textArea.select();
-    try { document.execCommand('copy'); setCopied(true); setTimeout(() => setCopied(false), 2000); } catch (err) {}
+    try { 
+      document.execCommand('copy'); 
+      setCopied(true); 
+      setTimeout(() => setCopied(false), 2000); 
+    } catch (err) {}
     document.body.removeChild(textArea);
   };
 
@@ -357,26 +365,6 @@ const App = () => {
               };
               reader.readAsDataURL(vaultFile);
           }
-      } else {
-        if (!vaultFile) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const bytes = new Uint8Array(e.target.result);
-          const { ciphertext, plaintext } = vaultToolMode === 'encrypt' 
-            ? mealyMachine.encryptBytes(bytes) 
-            : mealyMachine.decryptBytes(bytes);
-          
-          const finalBytes = vaultToolMode === 'encrypt' ? ciphertext : plaintext;
-          const blob = new Blob([finalBytes], { type: 'application/octet-stream' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          const suffix = vaultToolMode === 'encrypt' ? '.mealy' : '_recovered';
-          a.download = `${vaultFile.name}${suffix}`;
-          a.click();
-          URL.revokeObjectURL(url);
-        };
-        reader.readAsArrayBuffer(vaultFile);
       }
     } finally {
       setVaultProcessing(false);
@@ -416,7 +404,6 @@ const App = () => {
           const endTime = performance.now();
           const duration = (endTime - startTime).toFixed(3);
           
-          // Log hex representation to buffer (truncated for performance)
           setLastHex(uint8ToHex(ciphertext).slice(0, 3000) + (ciphertext.length * 3 > 3000 ? "..." : ""));
 
           const encCanvas = document.createElement('canvas');
@@ -648,7 +635,6 @@ const App = () => {
                 <div className="flex items-center gap-6 pb-2">
                   <button onClick={() => setVaultDataType('text')} className={`flex items-center gap-2 text-xs font-bold uppercase transition-colors ${vaultDataType === 'text' ? 'text-emerald-400' : 'text-slate-600 hover:text-slate-400'}`}><FileText size={16} /> Secret Note</button>
                   <button onClick={() => setVaultDataType('image')} className={`flex items-center gap-2 text-xs font-bold uppercase transition-colors ${vaultDataType === 'image' ? 'text-emerald-400' : 'text-slate-600 hover:text-slate-400'}`}><ImageIcon size={16} /> Image PNG</button>
-                  <button onClick={() => setVaultDataType('file')} className={`flex items-center gap-2 text-xs font-bold uppercase transition-colors ${vaultDataType === 'file' ? 'text-emerald-400' : 'text-slate-600 hover:text-slate-400'}`}><Upload size={16} /> Raw Binary</button>
                 </div>
                 <div className="space-y-6">
                   {vaultDataType === 'text' ? (
@@ -662,13 +648,11 @@ const App = () => {
                         </div>
                       )}
                     </div>
-                  ) : vaultDataType === 'image' ? (
+                  ) : (
                     <div className="space-y-4">
                         <div className="p-12 bg-black/40 border border-slate-800 rounded-[2rem] border-dashed flex flex-col items-center justify-center text-center cursor-pointer" onClick={() => vaultFileInputRef.current.click()}><ImageIcon size={48} className="text-slate-800 mb-4" /><p className="text-sm font-bold text-white uppercase tracking-tighter">{vaultFile ? vaultFile.name : 'Select Color Image'}</p></div>
                         {vaultDecryptedImage && <div className="p-4 bg-emerald-500/5 border border-emerald-500/20 rounded-3xl text-center"><img src={vaultDecryptedImage} className="mx-auto rounded-xl border border-white/10 max-h-64 shadow-2xl" alt="Decrypted" /></div>}
                     </div>
-                  ) : (
-                    <div className="p-12 bg-black/40 border border-slate-800 rounded-[2rem] border-dashed flex flex-col items-center justify-center text-center cursor-pointer" onClick={() => vaultFileInputRef.current.click()}><Binary size={48} className="text-slate-800 mb-4" /><p className="text-sm font-bold text-white uppercase tracking-tighter">{vaultFile ? vaultFile.name : 'Drop Binary Payload'}</p></div>
                   )}
                   <input type="file" ref={vaultFileInputRef} className="hidden" onChange={(e) => setVaultFile(e.target.files[0])} />
                 </div>
